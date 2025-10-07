@@ -19,4 +19,26 @@ class JurnalUmum extends Model
     {
         return $this->hasMany(JurnalUmumDetail::class, 'jurnal_umum_id');
     }
+
+    // Scope untuk filter performa
+    public function scopeWithAkunDetails($query)
+    {
+        return $query->with(['jurnalUmumDetail' => function ($query) {
+            $query->with(['akun' => function ($query) {
+                $query->select('id', 'nama_akun'); // Hanya ambil kolom yang diperlukan
+            }]);
+        }]);
+    }
+
+    public function scopeFilterByDateRange($query, $start, $end)
+    {
+        return $query->whereBetween('tanggal', [$start, $end]);
+    }
+
+    public function scopeFilterByAkun($query, $akunId)
+    {
+        return $query->whereHas('jurnalUmumDetail', function ($query) use ($akunId) {
+            $query->where('akun_id', $akunId);
+        });
+    }
 }

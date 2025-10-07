@@ -135,6 +135,8 @@ class JurnalUmumResource extends Resource
                 ]),
             ])
             ->defaultSort('tanggal', 'desc') // Default sorting
+            ->defaultPaginationPageOption(25) // Limit per page
+            ->paginatedWhileReordering() // Optimasi pagination
             ->deferLoading(); // Defer loading untuk data besar
     }
 
