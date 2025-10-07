@@ -1,66 +1,107 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Sistem Akuntansi: Buku Besar, Laba Rugi, dan Neraca
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## Deskripsi
+Sistem ini adalah aplikasi akuntansi berbasis web yang dibangun dengan Laravel 11 dan Filament PHP v3, yang memungkinkan pengguna untuk:
+- Mengelola data akun dan tipe akun
+- Mencatat transaksi dalam jurnal umum
+- Menghasilkan laporan buku besar, laporan laba rugi, dan neraca
 
-## About Laravel
+## Tech Stack
+**Backend:**
+- Laravel 11 (PHP Framework)
+- Filament PHP v3 (Admin Panel)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+**Frontend:**
+- Tailwind CSS
+- Alpine.js
+- Livewire
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+**Database:**
+- MySQL/MariaDB
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-## Learning Laravel
+## Struktur Database
+Sistem ini menggunakan struktur database dengan entitas berikut:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 1. User
+- `id`: Identifikasi unik pengguna
+- `username`: Nama pengguna untuk login
+- `email`: Alamat email pengguna
+- `password`: Kata sandi terenkripsi
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### 2. Tipe Akun
+- `id`: Identifikasi unik tipe akun
+- `kode_tipe`: Kode klasifikasi tipe akun
+- `nama_tipe`: Nama kategori akun
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 3. Akun
+- `id`: Identifikasi unik akun
+- `tipe_akun_id`: Relasi ke tabel Tipe Akun
+- `kode_akun`: Kode akun
+- `nama_akun`: Nama akun
+- `pos_saldo`: Posisi saldo (Debit/Kredit)
+- `pos_laporan`: Posisi laporan (Neraca/Laba Rugi)
+- `saldo_awal`: Saldo awal akun
 
-## Laravel Sponsors
+### 4. Jurnal Umum
+- `id`: Identifikasi unik jurnal
+- `tanggal`: Tanggal transaksi
+- `keterangan`: Deskripsi transaksi
+- `bukti_transfer`: Referensi bukti transaksi
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 5. Jurnal Umum Detail
+- `id`: Identifikasi unik detail jurnal
+- `jurnal_umum_id`: Relasi ke tabel Jurnal Umum
+- `akun_id`: Relasi ke tabel Akun
+- `tipe`: Jenis entri (Debit/Kredit)
+- `nominal`: Jumlah transaksi
 
-### Premium Partners
+## Fitur Utama
+1. **Manajemen Akun**
+   - CRUD Tipe Akun dan Akun dengan Filament
+   - Setel saldo awal akun
+   - Validasi kode akun unik
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+2. **Pencatatan Transaksi**
+   - Form input transaksi dengan validasi entri ganda
+   - Pencarian akun otomatis
+   - Histori transaksi
 
-## Contributing
+3. **Laporan Keuangan**
+   - Buku Besar dengan filter periode
+   - Laporan Laba Rugi dengan periodisasi
+   - Neraca dengan tampilan balance check
+   - Ekspor laporan (PDF/Excel)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Instalasi
+1. Clone repository ini:
+   ```bash
+   git clone [repository-url]
+   ```
+2. Install dependencies:
+   ```bash
+   composer install
+   npm install
+   ```
+3. Buat file `.env` dan konfigurasi database:
+   ```bash
+   cp .env.example .env
+   ```
+4. Generate key aplikasi:
+   ```bash
+   php artisan key:generate
+   ```
+5. Jalankan migrasi dan seeder:
+   ```bash
+   php artisan migrate --seed
+   ```
+6. Jalankan development server:
+   ```bash
+   php artisan serve
+   ```
 
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Konfigurasi Filament
+- Panel admin dapat diakses di `/dashboard`
+- Konfigurasi tambahan dapat dilakukan di:
+  - `config/filament.php`
+  - `app/Providers/Filament/AdminPanelProvider.php`
