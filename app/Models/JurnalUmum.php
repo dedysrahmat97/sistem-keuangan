@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class JurnalUmum extends Model
 {
     protected $table = 'jurnal_umum';
+    protected $with = ['jurnalUmumDetail.akun']; // Default eager loading
 
     protected $fillable = [
         'tanggal',

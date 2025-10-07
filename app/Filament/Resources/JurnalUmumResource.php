@@ -32,15 +32,19 @@ class JurnalUmumResource extends Resource
             ->schema([
                 Forms\Components\DateTimePicker::make('tanggal')
                     ->required()
-                    ->label('Tanggal'),
+                    ->label('Tanggal')
+                    ->default(now()),
                 Forms\Components\Textarea::make('keterangan')
                     ->required()
-                    ->label('Keterangan'),
+                    ->label('Keterangan')
+                    ->rows(3),
                 Forms\Components\FileUpload::make('bukti_transfer')
                     ->label('Bukti Transfer')
                     ->disk('public')
                     ->directory('bukti_transfer')
-                    ->visibility('public'),
+                    ->visibility('public')
+                    ->image()
+                    ->maxSize(2048), // Limit file size
                 Forms\Components\Repeater::make('jurnalUmumDetail')
                     ->relationship()
                     ->schema([
@@ -48,48 +52,73 @@ class JurnalUmumResource extends Resource
                             ->relationship('akun', 'nama_akun')
                             ->searchable()
                             ->required()
-                            ->label('Akun'),
+                            ->label('Akun')
+                            ->options(function () {
+                                // Cache options
+                                return cache()->remember('akun_form_options', 3600, function () {
+                                    return Akun::orderBy('nama_akun')->pluck('nama_akun', 'id');
+                                });
+                            })
+                            ->preload(), // Preload untuk performa
                         Forms\Components\Select::make('tipe')
                             ->options([
                                 'debet' => 'Debet',
                                 'kredit' => 'Kredit',
                             ])
                             ->required()
-                            ->label('Tipe'),
+                            ->label('Tipe')
+                            ->default('debet'),
                         Forms\Components\TextInput::make('nominal')
                             ->label('Nominal')
                             ->prefix('Rp')
-                            ->mask(RawJs::make('$money($input)'))
-                            ->stripCharacters(',')
-                            ->default(0),
-                    ]),
+                            ->numeric()
+                            ->default(0)
+                            ->required(),
+                    ])
+                    ->defaultItems(1)
+                    ->minItems(1)
+                    ->maxItems(20), // Batasi maksimum items
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            ->query(JurnalUmum::with(['jurnalUmumDetail.akun'])) // EAGER LOADING
             ->columns([
                 Tables\Columns\TextColumn::make('tanggal')
                     ->label('Tanggal')
-                    ->dateTime(),
+                    ->dateTime()
+                    ->sortable(), // Tambahkan sorting
                 Tables\Columns\ImageColumn::make('bukti_transfer')
-                    ->label('Bukti Transfer'),
+                    ->label('Bukti Transfer')
+                    ->toggleable(), // Bisa di-toggle untuk performance
                 Tables\Columns\TextColumn::make('keterangan')
                     ->searchable()
-                    ->label('Keterangan'),
+                    ->label('Keterangan')
+                    ->limit(50), // Limit karakter untuk performa
                 Tables\Columns\TextColumn::make('jurnalUmumDetail.akun.nama_akun')
-                    ->label('Nama Akun'),
-
+                    ->label('Nama Akun')
+                    ->formatStateUsing(function ($record) {
+                        // Ambil semua nama akun sekaligus
+                        return $record->jurnalUmumDetail
+                            ->pluck('akun.nama_akun')
+                            ->unique()
+                            ->implode(', ');
+                    }),
             ])
             ->filters([
                 DateRangeFilter::make('tanggal'),
                 Tables\Filters\SelectFilter::make('nama_akun')
                     ->relationship('jurnalUmumDetail.akun', 'nama_akun')
                     ->label('Nama Akun')
+                    ->searchable() // Tambahkan searchable
+                    ->preload() // Preload options
                     ->options(function () {
-
-                        return Akun::pluck('nama_akun', 'id');
+                        // Cache hasil query
+                        return cache()->remember('akun_options', 3600, function () {
+                            return Akun::pluck('nama_akun', 'id');
+                        });
                     }),
             ])
             ->actions([
@@ -102,10 +131,11 @@ class JurnalUmumResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    ExportBulkAction::make()
-                        ->label('Ekspor'),
+                    ExportBulkAction::make()->label('Ekspor'),
                 ]),
-            ]);
+            ])
+            ->defaultSort('tanggal', 'desc') // Default sorting
+            ->deferLoading(); // Defer loading untuk data besar
     }
 
     public static function getRelations(): array
